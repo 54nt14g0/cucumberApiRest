@@ -4,7 +4,7 @@ Feature: Actualizar usuario existente
     Given la API está disponible
 
   Scenario: Actualizar usuario con datos válidos
-    When realizo una petición PUT a "/usuarios/20" con body:
+    When realizo una petición PUT a "/usuarios/22" con body:
       """
       {
         "nombre": "Carlos M. Mendoza",

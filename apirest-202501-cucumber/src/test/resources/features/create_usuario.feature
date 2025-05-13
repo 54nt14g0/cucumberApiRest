@@ -4,21 +4,24 @@ Feature: Crear usuario
     Given la API está disponible
 
   Scenario: Crear usuario con datos válidos
+    Given elimino al usuario con email "juan.pera@example.com" si existe
     When realizo una petición POST a "/usuarios" con body:
-      """
-      {
-        "nombre": "Juan Perez",
-        "cedula": "12345678",
-        "email": "juan.perezz@example.com",
-        "ocupacion": "ESTUDIANTE",
-        "clave": "Abcdef12"
-      }
-      """
+    """
+    {
+      "nombre": "Juan Perezz",
+      "cedula": "123456688",
+      "email": "juan.pera@example.com",
+      "ocupacion": "ESTUDIANTE",
+      "clave": "Abcdef12e"
+    }
+    """
     Then la respuesta debe tener código 201
     And la respuesta contiene la ubicación del recurso
     And la respuesta debe contener el usuario creado
 
+
   Scenario: Crear usuario sin nombre
+    Given elimino al usuario con email "juan.perez@example.com" si existe
     When realizo una petición POST a "/usuarios" con body:
       """
       {
@@ -73,3 +76,4 @@ Feature: Crear usuario
       """
     Then la respuesta debe tener código 400
     And la respuesta debe contener errores de validación para "clave"
+

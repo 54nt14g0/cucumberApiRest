@@ -10,33 +10,26 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.equalTo;
-import io.restassured.http.ContentType;
-import static org.hamcrest.Matchers.equalTo;
-import io.restassured.http.ContentType;
-
-
+import static org.hamcrest.Matchers.*;
 
 public class UsuarioStepDefs {
 
     private Response response;
 
-    // ===== CONFIGURACIÓN COMÚN =====
+    // ===== COMMON SETUP =====
 
     @Given("la API está disponible")
-    public void laApiEstaDisponible() {
+    public void apiIsAvailable() {
         RestAssured.baseURI = System.getProperty(
                 "api.base",
                 "http://localhost:9090/CRUD/api/v1"
         );
     }
 
-    // ===== GET GENÉRICO =====
+    // ===== GENERIC GET =====
 
     @When("realizo una petición GET a {string}")
-    public void realizoUnaPeticionGETA(String path) {
+    public void sendGETRequestTo(String path) {
         response = given()
                 .when()
                 .get(path)
@@ -45,10 +38,10 @@ public class UsuarioStepDefs {
                 .response();
     }
 
-    // ===== POST GENÉRICO =====
+    // ===== GENERIC POST =====
 
     @When("realizo una petición POST a {string} con body:")
-    public void realizoUnaPeticionPOSTConBody(String path, String body) {
+    public void sendPOSTRequestToWithBody(String path, String body) {
         response = given()
                 .contentType(ContentType.JSON)
                 .body(body)
@@ -59,96 +52,10 @@ public class UsuarioStepDefs {
                 .response();
     }
 
-    // ===== ASERCIONES COMUNES =====
-
-    @Then("la respuesta debe tener código {int}")
-    public void laRespuestaDebeTenerCodigo(int statusCode) {
-        assertThat(response.getStatusCode()).isEqualTo(statusCode);
-    }
-
-    @And("la respuesta debe contener información del usuario")
-    public void laRespuestaContenerInfoUsuario() {
-        response.then().body("nombre", notNullValue());
-    }
-
-    @And("la respuesta debe contener el mensaje {string}")
-    public void laRespuestaContenerMensaje(String mensaje) {
-        response.then().body("mensaje", containsString(mensaje));
-    }
-
-    // ===== CREACIÓN DE USUARIO =====
-
-    @And("la respuesta contiene la ubicación del recurso")
-    public void laRespuestaContieneLaUbicacionDelRecurso() {
-        String location = response.getHeader("Location");
-        assertThat(location)
-                .as("La cabecera Location debe existir y no estar vacía")
-                .isNotBlank();
-    }
-
-    @And("la respuesta debe contener el usuario creado")
-    public void laRespuestaDebeContenerElUsuarioCreado() {
-        response.then()
-                .body("id", notNullValue())
-                .body("nombre", notNullValue())
-                .body("email", notNullValue())
-                .body("fechaCreacion", notNullValue())
-                .body("estadoCuenta", notNullValue());
-        // No comprobamos fechaActualizacion porque en creación suele ser null
-    }
-
-    // ===== LISTA PAGINADA =====
-
-    @And("la respuesta debe contener una lista de usuarios")
-    public void laRespuestaContenerListaUsuarios() {
-        List<?> usuarios = response.jsonPath().getList("usuarios");
-        assertThat(usuarios)
-                .as("La lista 'usuarios' debe existir")
-                .isNotNull();
-
-        int paginaActual = response.jsonPath().getInt("paginaActual");
-        long totalUsuarios = response.jsonPath().getLong("totalUsuarios");
-        int totalPaginas = response.jsonPath().getInt("totalPaginas");
-
-        assertThat(paginaActual)
-                .as("La página actual debe ser >= 1")
-                .isGreaterThanOrEqualTo(1);
-        assertThat(totalUsuarios)
-                .as("El total de usuarios debe ser >= 0")
-                .isGreaterThanOrEqualTo(0);
-        assertThat(totalPaginas)
-                .as("El total de páginas debe ser >= 0")
-                .isGreaterThanOrEqualTo(0);
-    }
-
-    // ===== VALIDACIONES de DTO =====
-
-    @And("la respuesta debe contener errores de validación para {string}")
-    public void laRespuestaDebeContenerErroresDeValidacionParaCampo(String campo) {
-        // Extraemos la lista bajo la clave "errores"
-        Object raw = response.jsonPath().get("errores");
-        assertThat(raw)
-                .as("La respuesta no contiene 'errores'. Body: " + response.getBody().asString())
-                .isNotNull();
-
-        List<Map<String, Object>> errores = response.jsonPath().getList("errores");
-        assertThat(errores)
-                .as("Debe haber al menos una violación. Body: " + response.getBody().asString())
-                .isNotEmpty();
-
-        // Buscamos un error cuya propiedad 'campo' coincida
-        boolean encontrado = errores.stream()
-                .anyMatch(e -> campo.equalsIgnoreCase(String.valueOf(e.get("campo"))));
-
-        assertThat(encontrado)
-                .as("Debe contener una violación para el campo '%s'. Body: %s",
-                        campo, response.getBody().asString())
-                .isTrue();
-    }
-    // ===== PUT GENÉRICO =====
+    // ===== GENERIC PUT =====
 
     @When("realizo una petición PUT a {string} con body:")
-    public void realizoUnaPeticionPUTConBody(String path, String body) {
+    public void sendPUTRequestToWithBody(String path, String body) {
         response = given()
                 .contentType(ContentType.JSON)
                 .body(body)
@@ -159,21 +66,10 @@ public class UsuarioStepDefs {
                 .response();
     }
 
-    // ===== ASERCIÓN ESPECÍFICA DE ACTUALIZACIÓN =====
-
-    @And("la respuesta debe contener el usuario actualizado con nombre {string} y email {string}")
-    public void laRespuestaDebeContenerUsuarioActualizado(String nombreEsperado, String emailEsperado) {
-        response.then()
-                .body("id", notNullValue())
-                .body("nombre", equalTo(nombreEsperado))
-                .body("email", equalTo(emailEsperado))
-                .body("fechaActualizacion", notNullValue());
-    }
-
-    // ===== PATCH GENÉRICO =====
+    // ===== GENERIC PATCH =====
 
     @When("realizo una petición PATCH a {string} con body:")
-    public void realizoUnaPeticionPATCHConBody(String path, String body) {
+    public void sendPATCHRequestToWithBody(String path, String body) {
         response = given()
                 .contentType(ContentType.JSON)
                 .body(body)
@@ -184,19 +80,10 @@ public class UsuarioStepDefs {
                 .response();
     }
 
-    // ===== ASERCIÓN ESPECÍFICA DE PATCH =====
-
-    @And("la respuesta debe contener el usuario parcialmente actualizado con campo {string} valor {string}")
-    public void laRespuestaDebeContenerUsuarioParcialmenteActualizado(String campo, String valor) {
-        // Comprueba que el campo dado tenga el nuevo valor
-        response.then()
-                .body(campo, equalTo(valor))
-                .body("id", notNullValue());
-    }
-    // ===== DELETE GENÉRICO =====
+    // ===== GENERIC DELETE =====
 
     @When("realizo una petición DELETE a {string}")
-    public void realizoUnaPeticionDELETEA(String path) {
+    public void sendDELETERequestTo(String path) {
         response = given()
                 .when()
                 .delete(path)
@@ -205,18 +92,210 @@ public class UsuarioStepDefs {
                 .response();
     }
 
-    // ===== ASERCIÓN DE NO CONTENT =====
+    // ===== COMMON ASSERTIONS =====
+
+    @Then("la respuesta debe tener código {int}")
+    public void responseShouldHaveStatusCode(int statusCode) {
+        assertThat(response.getStatusCode()).isEqualTo(statusCode);
+    }
+
+    @And("la respuesta debe contener información del usuario")
+    public void responseShouldContainUserInfo() {
+        response.then().body("nombre", notNullValue());
+    }
+
+    @And("la respuesta debe contener el mensaje {string}")
+    public void responseShouldContainMessage(String message) {
+        response.then().body("mensaje", containsString(message));
+    }
 
     @And("la respuesta no debe contener contenido")
-    public void laRespuestaNoDebeContenerContenido() {
+    public void responseShouldHaveNoContent() {
         String body = response.getBody().asString();
         assertThat(body)
-                .as("El cuerpo de la respuesta debe estar vacío cuando no hay contenido")
+                .as("Response body should be empty when there is no content")
                 .isEmpty();
     }
 
+    // ===== USER CREATION =====
 
+    @And("la respuesta contiene la ubicación del recurso")
+    public void responseContainsResourceLocation() {
+        String location = response.getHeader("Location");
+        assertThat(location)
+                .as("Location header should exist and not be blank")
+                .isNotBlank();
+    }
+
+    @And("la respuesta debe contener el usuario creado")
+    public void responseShouldContainCreatedUser() {
+        response.then()
+                .body("id", notNullValue())
+                .body("nombre", notNullValue())
+                .body("email", notNullValue())
+                .body("fechaCreacion", notNullValue())
+                .body("estadoCuenta", notNullValue());
+        // fechaActualizacion can be null on creation
+    }
+
+    // ===== USER UPDATE =====
+
+    @And("la respuesta debe contener el usuario actualizado con nombre {string} y email {string}")
+    public void responseShouldContainUpdatedUser(String expectedName, String expectedEmail) {
+        response.then()
+                .body("id", notNullValue())
+                .body("nombre", equalTo(expectedName))
+                .body("email", equalTo(expectedEmail))
+                .body("fechaActualizacion", notNullValue());
+    }
+
+    // ===== PARTIAL UPDATE (PATCH) =====
+
+    @And("la respuesta debe contener el usuario parcialmente actualizado con campo {string} valor {string}")
+    public void responseShouldContainPartiallyUpdatedField(String field, String value) {
+        response.then()
+                .body(field, equalTo(value))
+                .body("id", notNullValue());
+    }
+
+    // ===== PAGINATED LIST =====
+
+    @And("la respuesta debe contener una lista de usuarios")
+    public void responseShouldContainUserList() {
+        List<?> users = response.jsonPath().getList("usuarios");
+        assertThat(users)
+                .as("The 'usuarios' list should exist")
+                .isNotNull();
+
+        int currentPage = response.jsonPath().getInt("paginaActual");
+        long totalUsers = response.jsonPath().getLong("totalUsuarios");
+        int totalPages = response.jsonPath().getInt("totalPaginas");
+
+        assertThat(currentPage)
+                .as("Current page must be >= 1")
+                .isGreaterThanOrEqualTo(1);
+        assertThat(totalUsers)
+                .as("Total users must be >= 0")
+                .isGreaterThanOrEqualTo(0);
+        assertThat(totalPages)
+                .as("Total pages must be >= 0")
+                .isGreaterThanOrEqualTo(0);
+    }
+
+    // ===== DTO VALIDATION ERRORS =====
+
+    @And("la respuesta debe contener errores de validación para {string}")
+    public void responseShouldContainValidationErrorsForField(String field) {
+        Object raw = response.jsonPath().get("errores");
+        assertThat(raw)
+                .as("Response does not contain 'errores'. Body: " + response.getBody().asString())
+                .isNotNull();
+
+        List<Map<String, Object>> errors = response.jsonPath().getList("errores");
+        assertThat(errors)
+                .as("There should be at least one violation. Body: " + response.getBody().asString())
+                .isNotEmpty();
+
+        boolean found = errors.stream()
+                .anyMatch(e -> field.equalsIgnoreCase(String.valueOf(e.get("campo"))));
+
+        assertThat(found)
+                .as("Must contain a violation for field '%s'. Body: %s", field, response.getBody().asString())
+                .isTrue();
+    }
+
+    // ===== USER PRECONDITIONS =====
+
+
+    @Given("elimino al usuario con email {string} si existe")
+    public void deleteUserByEmailIfExists(String email) {
+        Response findResponse = given()
+                .when()
+                .get("/usuarios/email/" + email)
+                .then()
+                .extract()
+                .response();
+
+        if (findResponse.getStatusCode() == 200) {
+            Object idObj = findResponse.jsonPath().get("id");
+            if (idObj != null) {
+                Long id = Long.valueOf(String.valueOf(idObj));
+                given()
+                        .when()
+                        .delete("/usuarios/" + id)
+                        .then()
+                        .extract()
+                        .response();
+            }
+        }
+    }
+
+    @When("elimino al usuario con email {string}")
+    public void elimino_al_usuario_con_email(String email) {
+        // Buscar usuario por email para obtener su ID
+        Response findResponse = given()
+                .when()
+                .get("/usuarios/email/" + email)
+                .then()
+                .extract()
+                .response();
+
+        assertThat(findResponse.getStatusCode())
+                .as("El usuario debe existir para poder eliminarlo")
+                .isEqualTo(200);
+
+        Number idNumber = findResponse.jsonPath().get("id");
+        Long id = idNumber.longValue(); // Conversión segura
+
+        // Eliminar usuario por ID
+        response = given()
+                .when()
+                .delete("/usuarios/" + id)
+                .then()
+                .extract()
+                .response();
+    }
+
+    @Given("existe un usuario con email {string} para eliminarlo")
+    public void ensureUserExistsWithEmailToDelete(String email) {
+        Response findResponse = given()
+                .when()
+                .get("/usuarios/email/" + email)
+                .then()
+                .extract()
+                .response();
+
+        if (findResponse.getStatusCode() != 200) {
+            String newUserJson = """
+            {
+              "nombre": "Usuario a Eliminar",
+              "cedula": "99999999",
+              "email": "%s",
+              "ocupacion": "PROFESOR",
+              "clave": "Contrasena123"
+            }
+            """.formatted(email);
+
+            Response createResponse = given()
+                    .contentType(ContentType.JSON)
+                    .body(newUserJson)
+                    .when()
+                    .post("/usuarios")
+                    .then()
+                    .extract()
+                    .response();
+
+            assertThat(createResponse.getStatusCode())
+                    .as("User should be created successfully")
+                    .isIn(200, 201);
+        }
+    }
 }
+
+
+
+
+
 
 
 

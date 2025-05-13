@@ -4,7 +4,7 @@ Feature: Actualización parcial de usuario
     Given la API está disponible
 
   Scenario: Actualizar solo el nombre de un usuario existente
-    When realizo una petición PATCH a "/usuarios/17" con body:
+    When realizo una petición PATCH a "/usuarios/24" con body:
       """
       {
         "nombre": "Carlos Parcial"
@@ -21,7 +21,7 @@ Feature: Actualización parcial de usuario
       }
       """
     Then la respuesta debe tener código 400
-    And la respuesta debe contener el mensaje "Error de validación en los datos proporcionados"
+    And la respuesta debe contener el mensaje "Parámetro 'userId' con valor 'abc' no es un número válido"
 
   Scenario: usuario inexistente en PATCH
     When realizo una petición PATCH a "/usuarios/9999" con body:

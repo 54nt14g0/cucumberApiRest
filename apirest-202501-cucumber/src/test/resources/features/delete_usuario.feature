@@ -4,9 +4,12 @@ Feature: Eliminación de usuario
     Given la API está disponible
 
   Scenario: Eliminar usuario existente
-    When realizo una petición DELETE a "/usuarios/19"
+    Given existe un usuario con email "eliminar@correo.com" para eliminarlo
+    When elimino al usuario con email "eliminar@correo.com"
     Then la respuesta debe tener código 204
     And la respuesta no debe contener contenido
+
+
 
   Scenario: Eliminar usuario con userId no numérico
     When realizo una petición DELETE a "/usuarios/abc"
